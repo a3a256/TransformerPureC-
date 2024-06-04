@@ -54,6 +54,22 @@ std::vector<std::vector<float>> transpose(std::vector<std::vector<float>> mat){
     return res;
 }
 
+float std(std::vector<float> x){
+    float total_val, mean;
+    total_val = 0.0f;
+    int i;
+    for(i=0; i<x.size(); i++){
+        total_val += x[i];
+    }
+    mean = total_val/(float)x.size();
+    float diff_sum = 0.0f;
+    for(i=0; i<x.size(); i++){
+        diff_sum += x[i] - mean;
+    }
+    diff_sum = diff_sum/(float)x.size();
+    return std::sqrt(diff_sum);
+}
+
 float random_value(){
     std::random_device seeder;
     std::mt19937 rng(seeder());
