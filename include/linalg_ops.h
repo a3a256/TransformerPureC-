@@ -97,3 +97,13 @@ std::vector<std::vector<float>> add(std::vector<std::vector<float>> x, std::vect
     }
     return x;
 }
+
+std::vector<std::vector<float>> relu(std::vector<std::vector<float>> x){
+    int i, j;
+    for(i=0; i<x.size(); i++){
+        for(j=0; j<x[i].size(); j++){
+            x[i][j] = std::max(x[i][j], 0.0f);
+        }
+    }
+    return x;
+}
