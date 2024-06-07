@@ -44,7 +44,7 @@ class MultiHeadAttention{
 
         std::vector<Linear> attention_fc;
 
-        MultiHeadAttention(int em_shape, int num_heads){
+        MultiHeadAttention(int em_shape=64, int num_heads=8){
             em_size = em_shape;
             heads = num_heads;
             int i;
@@ -55,6 +55,17 @@ class MultiHeadAttention{
             }
             Linear layer(em_size*heads, em_size);
             attention_fc.push_back(layer);
+        }
+
+        MultiHeadAttention operator=(MultiHeadAttention mha){
+            q_weights = mha.q_weights;
+            k_weights = mha.k_weights;
+            v_weights = mha.v_weights;
+            attention_fc = mha.attention_fc;
+            em_size = mha.em_size;
+            heads = mha.heads;
+
+            return *this;
         }
 
         std::vector<std::vector<float>> forward(std::vector<std::vector<float>> q, std::vector<std::vector<float>> k, std::vector<std::vector<float>> v){
