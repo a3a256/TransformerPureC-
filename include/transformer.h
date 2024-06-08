@@ -88,21 +88,48 @@ class DecoderLayer{
 
 class Encoder{
 
-    std::vector<EncoderLayer> enc_layers;
-    
-    Encoder(int sequence_len, int em_size, int num_heads, int hidden_neurons, int num_layers){
-        int i;
-        for(i=0; i<num_layers; i++){
-            EncoderLayer enc_layer(sequence_len, em_size, num_heads, hidden_neurons);
-            enc_layers.push_back(enc_layer);
-        }
-    }
+    public:
 
-    std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x){
-        int i;
-        for(i=0; i<enc_layers.size(); i++){
-            x = enc_layers[i].forward(x);
+        std::vector<EncoderLayer> enc_layers;
+        
+        Encoder(int sequence_len, int em_size, int num_heads, int hidden_neurons, int num_layers){
+            int i;
+            for(i=0; i<num_layers; i++){
+                EncoderLayer enc_layer(sequence_len, em_size, num_heads, hidden_neurons);
+                enc_layers.push_back(enc_layer);
+            }
         }
-        return x;
-    }
+
+        std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x){
+            int i;
+            for(i=0; i<enc_layers.size(); i++){
+                x = enc_layers[i].forward(x);
+            }
+            return x;
+        }
+};
+
+class Decoder{
+
+    public:
+
+        std::vector<DecoderLayer> decoder_layers;
+
+        Decoder(int sequence_len, int em_size, int num_heads, int hidden_neurons, int num_layers){
+            int i;
+            for(i=0; i<num_layers; i++){
+                DecoderLayer decode(sequence_len, em_size, num_heads, hidden_neurons);
+                decoder_layers.push_back(decode);
+            }
+        }
+
+        std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x, std::vector<std::vector<float>> context){
+            int i;
+            for(i=0; i<decoder_layers.size(); i++){
+                x = decoder_layers[i].forward(x, context);
+            }
+
+            return x;
+        }
+
 };
