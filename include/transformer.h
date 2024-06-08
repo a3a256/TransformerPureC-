@@ -73,7 +73,7 @@ class DecoderLayer{
     std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x, std::vector<std::vector<float>> encoded){
         x = add(x, mha1.forward(x, x, x));
         x = norm1.forward(x);
-        x = add(x, mha2.forward(x, x, encoded));
+        x = add(x, mha2.forward(x, encoded, encoded));
         x = norm2.forward(x);
         x = add(x, ffn.forward(x));
         x = norm3.forward(x);
