@@ -34,7 +34,6 @@ class FeedForwardNetwork{
 };
 
 class EncoderLayer{
-    std::vector<std::vector<float>> mat;
     int embedding, heads;
     MultiHeadAttention mha;
     LayerNormalization norm1, norm2;
@@ -53,5 +52,31 @@ class EncoderLayer{
         x = norm1.forward(x);
         x = add(x, ffn.forward(x));
         x = norm2.forward(x);
+
+        return x;
+    }
+};
+
+class DecoderLayer{
+    MultiHeadAttention mha1, mha2;
+    LayerNormalization norm1, norm2, norm3;
+    FeedForwardNetwork ffn;
+    DecoderLayer(int sequence_len, int em_size, int num_heads, int hidden_neurons){
+        mha1 = MultiHeadAttention(em_size, num_heads);
+        mha2 = MultiHeadAttention(em_size, num_heads);
+        norm1 = LayerNormalization(sequence_len, em_size);
+        norm2 = LayerNormalization(sequence_len, em_size);
+        norm3 = LayerNormalization(sequence_len, em_size);
+        ffn = FeedForwardNetwork(em_size, hidden_neurons);
+    }
+
+    std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x, std::vector<std::vector<float>> encoded){
+        x = add(x, mha1.forward(x, x, x));
+        x = norm1.forward(x);
+        x = add(x, mha2.forward(x, x, encoded));
+        x = norm2.forward(x);
+        x = add(x, ffn.forward(x));
+        x = norm3.forward(x);
+        return x;
     }
 };
