@@ -12,7 +12,7 @@ class Linear{
     public:
         int in_features, out_features;
         std::vector<std::vector<float>> parameters;
-        Linear(int in_channels, int out_channels){
+        Linear(int in_channels=1, int out_channels=1){
             in_features = in_channels;
             out_features = out_channels;
 
@@ -27,6 +27,12 @@ class Linear{
                 parameters.push_back(temp);
                 std::vector<float>().swap(temp);
             }
+        }
+
+        Linear operator=(Linear layer){
+            in_features = layer.in_features;
+            out_features = layer.out_features;
+            parameters = layer.parameters;
         }
 
         std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x){
