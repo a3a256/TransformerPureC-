@@ -3,6 +3,7 @@
 #include <vector>
 #include "mha.h"
 #include "normalisation.h"
+#include "position_encoding.h"
 
 class FeedForwardNetwork{
 
@@ -91,17 +92,22 @@ class Encoder{
     public:
 
         std::vector<EncoderLayer> enc_layers;
+
+        std::vector<std::vector<float>> pos_encoder;
         
-        Encoder(int sequence_len, int em_size, int num_heads, int hidden_neurons, int num_layers){
+        Encoder(int sequence_len, int em_size, int num_heads, int hidden_neurons, int num_layers, int n){
             int i;
             for(i=0; i<num_layers; i++){
                 EncoderLayer enc_layer(sequence_len, em_size, num_heads, hidden_neurons);
                 enc_layers.push_back(enc_layer);
             }
+
+            pos_encoder = position_encoding(em_size, sequence_len, n);
         }
 
         std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x){
             int i;
+            x = add(x, pos_encoder);
             for(i=0; i<enc_layers.size(); i++){
                 x = enc_layers[i].forward(x);
             }
@@ -115,16 +121,24 @@ class Decoder{
 
         std::vector<DecoderLayer> decoder_layers;
 
-        Decoder(int sequence_len, int em_size, int num_heads, int hidden_neurons, int num_layers){
+        std::vector<std::vector<float>> pos_encoder;
+
+        Decoder(int sequence_len, int em_size, int num_heads, int hidden_neurons, int num_layers, int n){
             int i;
             for(i=0; i<num_layers; i++){
                 DecoderLayer decode(sequence_len, em_size, num_heads, hidden_neurons);
                 decoder_layers.push_back(decode);
             }
+
+            pos_encoder = position_encoding(em_size, sequence_len, n);
         }
 
         std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x, std::vector<std::vector<float>> context){
             int i;
+
+            x = add(x, pos_encoder);
+
+            
             for(i=0; i<decoder_layers.size(); i++){
                 x = decoder_layers[i].forward(x, context);
             }
