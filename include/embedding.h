@@ -11,7 +11,7 @@ class Embedding{
 
         std::vector<std::vector<float>> weight;
 
-        Embedding(int num_embedding=10, int embedding_dim){
+        Embedding(int num_embedding=10, int embedding_dim=8){
             int i, j;
             vocab_size = num_embedding;
             em_size = embedding_dim;
@@ -21,6 +21,12 @@ class Embedding{
                     weight[i][j] = random_value();
                 }
             }
+        }
+
+        Embedding operator=(Embedding embed){
+            vocab_size = embed.vocab_size;
+            em_size = embed.em_size;
+            weight = embed.weight;
         }
 
         std::vector<std::vector<float>> forward(std::vector<int> x){

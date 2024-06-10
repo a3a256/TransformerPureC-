@@ -4,6 +4,35 @@
 #include "mha.h"
 #include "normalisation.h"
 #include "position_encoding.h"
+#include "embedding.h"
+
+class EmbeddingEncoding{
+    public:
+        int sequence_len, embedding_dim, embedding_size;
+        Embedding embed;
+        std::vector<std::vector<float>> position_encoder;
+        EmbeddingEncoding(int seq_len=512, int em_size=64, int vocab_size=1000, int n=10000){
+            embedding_dim = em_size;
+            embedding_size = vocab_size;
+            sequence_len = seq_len;
+            position_encoder = position_encoding(embedding_dim, sequence_len, n);
+            embed = Embedding(embedding_size, embedding_dim);
+        }
+
+        EmbeddingEncoding operator=(EmbeddingEncoding encode){
+            sequence_len = encode.sequence_len;
+            embedding_dim = encode.embedding_dim;
+            embedding_size = encode.embedding_size;
+            embed = encode.embed;
+            position_encoder = encode.position_encoder;
+        }
+
+        std::vector<std::vector<float>> forward(std::vector<int> x){
+            std::vector<std::vector<float>> y;
+            y = embed.forward(x);
+            return add(y, position_encoder);
+        }
+};
 
 class FeedForwardNetwork{
 
@@ -93,16 +122,16 @@ class Encoder{
 
         std::vector<EncoderLayer> enc_layers;
 
-        std::vector<std::vector<float>> pos_encoder;
+        EmbeddingEncoding pos_encoder;
         
-        Encoder(int sequence_len=512, int em_size=64, int num_heads=8, int hidden_neurons=2048, int num_layers=6, int n=10000){
+        Encoder(int sequence_len=512, int em_size=64, int vocab_size=1000, int num_heads=8, int hidden_neurons=2048, int num_layers=6, int n=10000){
             int i;
             for(i=0; i<num_layers; i++){
                 EncoderLayer enc_layer(sequence_len, em_size, num_heads, hidden_neurons);
                 enc_layers.push_back(enc_layer);
             }
 
-            pos_encoder = position_encoding(em_size, sequence_len, n);
+            pos_encoder = EmbeddingEncoding(sequence_len, em_size, vocab_size, n);
         }
 
         Encoder operator=(Encoder encode){
@@ -112,13 +141,14 @@ class Encoder{
             return *this;
         }
 
-        std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x){
+        std::vector<std::vector<float>> forward(std::vector<int> x){
             int i;
-            x = add(x, pos_encoder);
+            std::vector<std::vector<float>> y;
+            y = pos_encoder.forward(x);
             for(i=0; i<enc_layers.size(); i++){
-                x = enc_layers[i].forward(x);
+                y = enc_layers[i].forward(y);
             }
-            return x;
+            return y;
         }
 };
 
@@ -128,16 +158,16 @@ class Decoder{
 
         std::vector<DecoderLayer> decoder_layers;
 
-        std::vector<std::vector<float>> pos_encoder;
+        EmbeddingEncoding pos_encoder;
 
-        Decoder(int sequence_len=512, int em_size=64, int num_heads=8, int hidden_neurons=2048, int num_layers=6, int n=10000){
+        Decoder(int sequence_len=512, int em_size=64, int vocab_size=1000, int num_heads=8, int hidden_neurons=2048, int num_layers=6, int n=10000){
             int i;
             for(i=0; i<num_layers; i++){
                 DecoderLayer decode(sequence_len, em_size, num_heads, hidden_neurons);
                 decoder_layers.push_back(decode);
             }
 
-            pos_encoder = position_encoding(em_size, sequence_len, n);
+            pos_encoder = EmbeddingEncoding(sequence_len, em_size, vocab_size, n);
         }
 
         Decoder operator=(Decoder decode){
@@ -147,17 +177,19 @@ class Decoder{
             return *this;
         }
 
-        std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x, std::vector<std::vector<float>> context){
+        std::vector<std::vector<float>> forward(std::vector<int> x, std::vector<std::vector<float>> context){
             int i;
 
-            x = add(x, pos_encoder);
+            std::vector<std::vector<float>> y;
+
+            y = pos_encoder.forward(x);
 
 
             for(i=0; i<decoder_layers.size(); i++){
-                x = decoder_layers[i].forward(x, context);
+                y = decoder_layers[i].forward(y, context);
             }
 
-            return x;
+            return y;
         }
 
 };
@@ -181,15 +213,17 @@ class Transformer{
             fc = Linear(em_size, tokens);
         }
 
-        std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x, std::vector<std::vector<float>> y){
-            x = encode.forward(x);
+        std::vector<std::vector<float>> forward(std::vector<int> x, std::vector<int> y){
+            std::vector<std::vector<float>> context;
+            std::vector<std::vector<float>> output;
+            context = encode.forward(x);
 
-            y = decode.forward(y, x);
+            output = decode.forward(y, context);
 
-            y = fc.forward(y);
+            output = fc.forward(output);
 
-            y = softmax(y);
+            output = softmax(output);
 
-            return y;
+            return output;
         }
 };
