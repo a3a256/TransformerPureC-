@@ -11,11 +11,11 @@ class EmbeddingEncoding{
         int sequence_len, embedding_dim, embedding_size;
         Embedding embed;
         std::vector<std::vector<float>> position_encoder;
-        EmbeddingEncoding(int seq_len=512, int em_size=64, int vocab_size=1000, int n=10000){
+        EmbeddingEncoding(int seq_len=64, int em_size=16, int vocab_size=10, int n=100){
             embedding_dim = em_size;
             embedding_size = vocab_size;
             sequence_len = seq_len;
-            position_encoder = position_encoding(embedding_dim, sequence_len, n);
+            position_encoder = position_encoding(seq_len, em_size, n);
             embed = Embedding(embedding_size, embedding_dim);
         }
 
@@ -25,6 +25,7 @@ class EmbeddingEncoding{
             embedding_size = encode.embedding_size;
             embed = encode.embed;
             position_encoder = encode.position_encoder;
+            return *this;
         }
 
         std::vector<std::vector<float>> forward(std::vector<int> x){
@@ -124,7 +125,7 @@ class Encoder{
 
         EmbeddingEncoding pos_encoder;
         
-        Encoder(int sequence_len=512, int em_size=64, int vocab_size=1000, int num_heads=8, int hidden_neurons=2048, int num_layers=6, int n=10000){
+        Encoder(int sequence_len=64, int em_size=16, int vocab_size=10, int num_heads=4, int hidden_neurons=64, int num_layers=3, int n=100){
             int i;
             for(i=0; i<num_layers; i++){
                 EncoderLayer enc_layer(sequence_len, em_size, num_heads, hidden_neurons);
@@ -160,7 +161,7 @@ class Decoder{
 
         EmbeddingEncoding pos_encoder;
 
-        Decoder(int sequence_len=512, int em_size=64, int vocab_size=1000, int num_heads=8, int hidden_neurons=2048, int num_layers=6, int n=10000){
+        Decoder(int sequence_len=64, int em_size=16, int vocab_size=10, int num_heads=4, int hidden_neurons=64, int num_layers=3, int n=100){
             int i;
             for(i=0; i<num_layers; i++){
                 DecoderLayer decode(sequence_len, em_size, num_heads, hidden_neurons);
@@ -204,11 +205,11 @@ class Transformer{
 
         Linear fc;
 
-        Transformer(int sequence_len, int em_size, int num_heads, int hidden_neurons, int num_layers, int n, int tokens){
+        Transformer(int sequence_len, int vocab_size, int em_size, int num_heads, int hidden_neurons, int num_layers, int n, int tokens){
 
-            encode = Encoder(sequence_len, em_size, num_heads, hidden_neurons, num_layers, n);
+            encode = Encoder(sequence_len, em_size, vocab_size, num_heads, hidden_neurons, num_layers, n);
 
-            decode = Decoder(sequence_len, em_size, num_heads, hidden_neurons, num_layers, n);
+            decode = Decoder(sequence_len, em_size, vocab_size, num_heads, hidden_neurons, num_layers, n);
 
             fc = Linear(em_size, tokens);
         }

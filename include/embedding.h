@@ -27,10 +27,11 @@ class Embedding{
             vocab_size = embed.vocab_size;
             em_size = embed.em_size;
             weight = embed.weight;
+            return *this;
         }
 
         std::vector<std::vector<float>> forward(std::vector<int> x){
-            std::vector<std::vector<float>> one_hot_encoding(x.size(), std::vector<float>(em_size, 0.0f));
+            std::vector<std::vector<float>> one_hot_encoding(x.size(), std::vector<float>(vocab_size, 0.0f));
             int i;
             for(i=0; i<x.size(); i++){
                 one_hot_encoding[i][x[i]] = 1.0f;

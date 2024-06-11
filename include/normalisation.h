@@ -3,7 +3,7 @@
 #include <vector>
 #include <math.h>
 #include <climits>
-#include <linalg_ops.h>
+#include "linalg_ops.h"
 
 
 class LayerNormalization{
@@ -14,7 +14,7 @@ class LayerNormalization{
         std::vector<std::vector<float>> gamma, beta;
 
         
-        LayerNormalization(int height=512, int width=64){
+        LayerNormalization(int height=64, int width=16){
             rows = height;
             cols = width;
             int i, j;
@@ -40,7 +40,7 @@ class LayerNormalization{
         std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x){
             float standard_deviation, mean_value, epsilon, lower_bound;
             epsilon = 0.00001f;
-            standard_deviation = std(x);
+            standard_deviation = stddev(x);
             mean_value = mean(x);
             lower_bound = std::sqrt(standard_deviation*standard_deviation+epsilon);
             int i, j;

@@ -33,6 +33,8 @@ class Linear{
             in_features = layer.in_features;
             out_features = layer.out_features;
             parameters = layer.parameters;
+
+            return *this;
         }
 
         std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x){
